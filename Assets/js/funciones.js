@@ -1,0 +1,129 @@
+let tblUsuarios;
+document.addEventListener("DOMContentLoaded", function() {
+    tblUsuarios = $('#tblUsuarios').DataTable( {
+        ajax: {
+            url: base_url + "Usuarios/listar", // Usamos el metodo listar() de Usuario.php
+            dataSrc: ''
+        },
+        columns: [
+            {
+                'data' : 'id'
+            },
+            {
+                'data' : 'usuario'
+            },
+            {
+                'data' : 'nombre'
+            },
+            {
+                'data' : 'caja'
+            },
+            {
+                'data' : 'estado'
+            },
+            {
+                'data' : 'acciones'
+            }     
+        ]
+    });
+})
+
+// Utilizamos onclick="frmLogin(event);
+function frmLogin(e) {
+    e.preventDefault();
+    const usuario = document.getElementById("usuario");
+    const clave = document.getElementById("clave");
+    // Validar si el usuario y clave esta vacio
+    if (usuario.value == "") {
+        clave.classList.remove("is-invalid");
+        usuario.classList.add("is-invalid");
+        usuario.focus();
+    }else if(clave.value == ""){
+        usuario.classList.remove("is-invalid");
+        clave.classList.add("is-invalid");
+        clave.focus();
+    }else{ // Si no esta vacio
+        const url = base_url + "Usuarios/validar";
+        const frm = document.getElementById("frmLogin");
+        const http = new XMLHttpRequest();
+        http.open("POST", url, true);
+        http.send(new FormData(frm));
+        // Manejo de mensajes del metodo validar() de Usuarios.php
+        http.onreadystatechange = function(){
+            if (this.readyState == 4 && this.status == 200) {
+                const res = JSON.parse(this.responseText);
+                if (res == "ok") {
+                    window.location = base_url + "Usuarios";
+                }else{
+                    document.getElementById("alerta").classList.remove("d-none");
+                    document.getElementById("alerta").innerHTML = res;
+                }
+            }
+        }
+    }
+}
+
+// Evento en el boton Nuevo de Usuarios
+function frmUsuario() {
+    $("#nuevo_usuario").modal("show");
+}
+function registrarUser(e) {
+    e.preventDefault();
+    const usuario = document.getElementById("usuario");
+    const nombre = document.getElementById("nombre");
+    const clave = document.getElementById("clave");
+    const confirmar= document.getElementById("confirmar");
+    const caja= document.getElementById("caja");
+    // Validar si todos los campos estan vacios
+    if (usuario.value == "" || nombre.value == "" || clave.value == "" || caja.value == "") {
+        Swal.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: 'Todos los campos son obligatorios',
+            showConfirmButton: false,
+            timer: 3000
+        })
+    // Validar si clave y confirmar estan iguales
+    }else if(clave.value != confirmar.value){
+        Swal.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: 'Las contraseñas no coinciden',
+            showConfirmButton: false,
+            timer: 3000
+        })
+    }else{ // Si no esta vacio
+        const url = base_url + "Usuarios/registrar";
+        const frm = document.getElementById("frmUsuario");
+        const http = new XMLHttpRequest();
+        http.open("POST", url, true);
+        http.send(new FormData(frm)); // enviamos el formulario
+        // Manejo de mensajes del metodo validar() de Usuarios.php
+        http.onreadystatechange = function(){
+            if (this.readyState == 4 && this.status == 200) {
+                const res = JSON.parse(this.responseText);
+                if (res == "si") {
+                    Swal.fire({
+                        position: 'top-end',
+                        icon: 'success',
+                        title: 'Usuario registrado con éxito',
+                        showConfirmButton: false,
+                        timer: 3000
+                    })
+                    // Resetear formulario
+                    frm.reset();
+                    // Esconder el modal
+                    $("#nuevo_usuario").modal("hide");
+                }else{
+                    Swal.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: res,
+                        showConfirmButton: false,
+                        timer: 3000
+                    })
+                }
+            }
+        }
+    }
+}
