@@ -65,7 +65,12 @@ function frmLogin(e) {
 
 // Evento en el boton Nuevo de Usuarios
 function frmUsuario() {
+    document.getElementById("title").innerHTML = "Nuevo Usuario";
+    document.getElementById("btnAccion").innerHTML = "Registrar";
+    document.getElementById("claves").classList.remove("d-none");// Mostrar campos de contraseñas
+    document.getElementById("frmUsuario").reset();// Resetear campos
     $("#nuevo_usuario").modal("show");
+    document.getElementById("id").value = "";// Importante para registrar un nuevo usuario
 }
 function registrarUser(e) {
     e.preventDefault();
@@ -75,20 +80,11 @@ function registrarUser(e) {
     const confirmar= document.getElementById("confirmar");
     const caja= document.getElementById("caja");
     // Validar si todos los campos estan vacios
-    if (usuario.value == "" || nombre.value == "" || clave.value == "" || caja.value == "") {
+    if (usuario.value == "" || nombre.value == "" || caja.value == "") {
         Swal.fire({
             position: 'top-end',
             icon: 'error',
             title: 'Todos los campos son obligatorios',
-            showConfirmButton: false,
-            timer: 3000
-        })
-    // Validar si clave y confirmar estan iguales
-    }else if(clave.value != confirmar.value){
-        Swal.fire({
-            position: 'top-end',
-            icon: 'error',
-            title: 'Las contraseñas no coinciden',
             showConfirmButton: false,
             timer: 3000
         })
@@ -114,6 +110,18 @@ function registrarUser(e) {
                     frm.reset();
                     // Esconder el modal
                     $("#nuevo_usuario").modal("hide");
+                    tblUsuarios.ajax.reload(); // Recargar pagina
+                }else if (res == "modificado") {
+                    Swal.fire({
+                        position: 'top-end',
+                        icon: 'success',
+                        title: 'Usuario modificado con éxito',
+                        showConfirmButton: false,
+                        timer: 3000
+                    })
+                    // Esconder el modal
+                    $("#nuevo_usuario").modal("hide");
+                    tblUsuarios.ajax.reload(); // Recargar pagina
                 }else{
                     Swal.fire({
                         position: 'top-end',
@@ -126,4 +134,26 @@ function registrarUser(e) {
             }
         }
     }
+}
+
+// Evento en el boton Editar
+function btnEditarUser(id) {
+    document.getElementById("title").innerHTML = "Actualizar Usuario";
+    document.getElementById("btnAccion").innerHTML = "Modificar";
+    const url = base_url + "Usuarios/editar/"+id;
+        const http = new XMLHttpRequest();
+        http.open("GET", url, true); // GET: Recibimos los datos
+        http.send();
+        http.onreadystatechange = function(){
+            if (this.readyState == 4 && this.status == 200) {
+                const res = JSON.parse(this.responseText);
+                // Presentamos los datos
+                document.getElementById("id").value = res.id;
+                document.getElementById("usuario").value = res.usuario;
+                document.getElementById("nombre").value = res.nombre;
+                document.getElementById("caja").value = res.id_caja;
+                document.getElementById("claves").classList.add("d-none"); // Ocultar campos de contraseñas
+                $("#nuevo_usuario").modal("show");
+            }
+        }
 }
