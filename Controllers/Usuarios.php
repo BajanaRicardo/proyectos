@@ -4,6 +4,9 @@ class Usuarios extends Controller
     public function __construct()
     {
         session_start();
+        if (empty($_SESSION['activo'])) {
+            header("location: ".base_url);
+        }
         parent::__construct();
     }
 
@@ -28,8 +31,9 @@ class Usuarios extends Controller
             }
             // Creamos los botones de editar y eliminar
             $data[$i]['acciones'] = '<div>
-            <button class="btn btn-primary" type="button" onclick="btnEditarUser('.$data[$i]['id'].');">Editar</button>
-            <button class="btn btn-danger" type="button">Eliminar</button>
+            <button class="btn btn-primary" type="button" onclick="btnEditarUser('.$data[$i]['id'].');"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-danger" type="button" onclick="btnEliminarUser('.$data[$i]['id'].');"><i class="fas fa-trash-alt"></i></button>
+            <button class="btn btn-success" type="button" onclick="btnReingresarUser('.$data[$i]['id'].');"><i class="fas fa-circle"></i></button>
             <div/>';
         }
         echo json_encode($data, JSON_UNESCAPED_UNICODE); // Convertimos el $data en JSON
@@ -45,11 +49,13 @@ class Usuarios extends Controller
         }else{ // Si no esta vacio, enviar los datos del usuario y clave a getUsuario
             $usuario = $_POST['usuario'];
             $clave = $_POST['clave'];
-            $data = $this->$model->getUsuario($usuario, $clave);
+            $hash = hash("SHA256", $clave);
+            $data = $this->$model->getUsuario($usuario, $hash);
             if ($data) {
                 $_SESSION['id_usuario'] = $data['id'];
                 $_SESSION['usuario'] = $data['usuario'];
                 $_SESSION['nombre'] = $data['nombre'];
+                $_SESSION['activo'] = true;
                 $msg = "ok";
             }else{
                 $msg = "Usuario o contraseña incorrecta";
@@ -105,6 +111,38 @@ class Usuarios extends Controller
         $data = $this->$model->editarUser($id);
         echo json_encode($data, JSON_UNESCAPED_UNICODE);
         die();
+    }
+
+    public function eliminar(int $id)
+    {
+        $model = $this->cargarModel(); // importante
+        $data = $this->$model->accionUser(0, $id); //Llamar el metodo accionUser del modelo
+        if ($data == 1) {
+            $msg = "ok";
+        }else{
+            $msg = "Error al eliminar el usuario";
+        }
+        echo json_encode($msg, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
+    public function reingresar(int $id)
+    {
+        $model = $this->cargarModel(); // importante
+        $data = $this->$model->accionUser(1, $id); //Llamar el metodo accionUser del modelo
+        if ($data == 1) {
+            $msg = "ok";
+        }else{
+            $msg = "Error al reingresar el usuario";
+        }
+        echo json_encode($msg, JSON_UNESCAPED_UNICODE);
+        die();
+    }
+
+    public function salir()
+    {
+        session_destroy();
+        header("location: ".base_url);
     }
 }
 ?>

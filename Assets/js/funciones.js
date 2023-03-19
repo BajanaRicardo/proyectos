@@ -141,19 +141,102 @@ function btnEditarUser(id) {
     document.getElementById("title").innerHTML = "Actualizar Usuario";
     document.getElementById("btnAccion").innerHTML = "Modificar";
     const url = base_url + "Usuarios/editar/"+id;
-        const http = new XMLHttpRequest();
-        http.open("GET", url, true); // GET: Recibimos los datos
-        http.send();
-        http.onreadystatechange = function(){
-            if (this.readyState == 4 && this.status == 200) {
-                const res = JSON.parse(this.responseText);
-                // Presentamos los datos
-                document.getElementById("id").value = res.id;
-                document.getElementById("usuario").value = res.usuario;
-                document.getElementById("nombre").value = res.nombre;
-                document.getElementById("caja").value = res.id_caja;
-                document.getElementById("claves").classList.add("d-none"); // Ocultar campos de contraseñas
-                $("#nuevo_usuario").modal("show");
-            }
+    const http = new XMLHttpRequest();
+    http.open("GET", url, true); // GET: Recibimos los datos
+    http.send();
+    http.onreadystatechange = function(){
+        if (this.readyState == 4 && this.status == 200) {
+            const res = JSON.parse(this.responseText);
+            // Presentamos los datos
+            document.getElementById("id").value = res.id;
+            document.getElementById("usuario").value = res.usuario;
+            document.getElementById("nombre").value = res.nombre;
+            document.getElementById("caja").value = res.id_caja;
+            document.getElementById("claves").classList.add("d-none"); // Ocultar campos de contraseñas
+            $("#nuevo_usuario").modal("show");
         }
+    }
+}
+
+// Evento en el boton Eliminar
+// Pagina de alertas: https://sweetalert2.github.io/
+function btnEliminarUser(id) {
+    Swal.fire({
+        title: '¿Estas seguro de eliminar?',
+        text: "El usuario no se eliminara de forma permanente, solo cambiará el estado a inactivo!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Si',
+        cancelButtonText: 'No'
+      }).then((result) => {
+        if (result.isConfirmed) {
+            const url = base_url + "Usuarios/eliminar/"+id;
+            const http = new XMLHttpRequest();
+            http.open("GET", url, true); // GET: Recibimos los datos
+            http.send();
+            http.onreadystatechange = function(){
+                if (this.readyState == 4 && this.status == 200) {
+                    const res = JSON.parse(this.responseText);
+                    if (res == "ok") {
+                        Swal.fire(
+                            'Mensaje!',
+                            'Usuario eliminado con éxito.',
+                            'success'
+                        )
+                        tblUsuarios.ajax.reload(); // Recargar pagina
+                    } else {
+                        Swal.fire(
+                            'Mensaje!',
+                            res,
+                            'error'
+                        )
+                    }
+                }
+            }
+          
+        }
+      })
+}
+
+// Evento en el boton Reingresar
+// Pagina de alertas: https://sweetalert2.github.io/
+function btnReingresarUser(id) {
+    Swal.fire({
+        title: '¿Estas seguro de reingresar?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Si',
+        cancelButtonText: 'No'
+      }).then((result) => {
+        if (result.isConfirmed) {
+            const url = base_url + "Usuarios/reingresar/"+id;
+            const http = new XMLHttpRequest();
+            http.open("GET", url, true); // GET: Recibimos los datos
+            http.send();
+            http.onreadystatechange = function(){
+                if (this.readyState == 4 && this.status == 200) {
+                    const res = JSON.parse(this.responseText);
+                    if (res == "ok") {
+                        Swal.fire(
+                            'Mensaje!',
+                            'Usuario reingresado con éxito.',
+                            'success'
+                        )
+                        tblUsuarios.ajax.reload(); // Recargar pagina
+                    } else {
+                        Swal.fire(
+                            'Mensaje!',
+                            res,
+                            'error'
+                        )
+                    }
+                }
+            }
+          
+        }
+      })
 }
